@@ -7,7 +7,7 @@ const ThemeSwitcher = () => {
       <input type="checkbox" className="theme-controller" value="light" />
       {/* sun icon */}
       <svg
-        className="swap-off fill-neutral-content w-8 h-8"
+        className="swap-off fill-primary-content w-8 h-8"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
       >
@@ -16,7 +16,7 @@ const ThemeSwitcher = () => {
 
       {/* moon icon */}
       <svg
-        className="swap-on fill-neutral-content w-8 h-8"
+        className="swap-on fill-primary-content w-8 h-8"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
       >
