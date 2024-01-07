@@ -1,41 +1,72 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 const ImageDetails = () => {
+  const [imageData, setImageData] = useState({});
+  const params = useParams();
+
+  console.log(params);
+  useEffect(() => {
+    axios
+      .get(
+        `https://api.unsplash.com/photos/${params.id}?&client_id=${process.env.REACT_APP_API_KEY}`
+      )
+      .then((response) => setImageData(response.data));
+  }, [params.id]);
+
+  const { urls, user, created_at, description, width, height, links } =
+    imageData;
+
   return (
     <div className="w-11/12 mx-auto px-4 mt-8">
       <h1 className="text-center text-xl font-semibold mb-3">Details</h1>
-      <div className="card lg:card-side bg-base-100 shadow-xl">
-        <figure className="w-full md:w-1/2">
-          <img
-            src="https://daisyui.com/images/stock/photo-1494232410401-ad00d5433cfa.jpg"
-            alt="Album"
-          />
-        </figure>
-        <div className="p-8 flex flex-col gap-2">
-          <h2 className="card-title">Uploaded By: NEOM (@mYizSrdJkkU)</h2>
-          <p className="">
-            Uploaded on{" "}
-            <span className="font-semibold">2023-05-02T06:42:00Z</span>
-          </p>
-          <p>
-            <span className="font-semibold block">Description:</span>
-            Trojena – The Mountains of NEOM, Saudi Arabia | A unique mountain
-            destination in NEOM, Trojena will offer year-round outdoor skiing
-            and adventure sports.
-          </p>
-          <p>
-            {" "}
-            <span className="font-semibold">Width: </span>8000
-          </p>
-          <p>
-            {" "}
-            <span className="font-semibold">Height: </span>9000{" "}
-          </p>
-          <div className="card-actions">
-            <button className="btn btn-primary">Download</button>
+      {imageData.id ? (
+        <div className="card lg:card-side bg-base-100 shadow-xl">
+          <figure className="w-full md:w-1/2">
+            <img src={urls.full} alt="Album" />
+          </figure>
+          <div className="p-8 flex flex-col gap-2">
+            <h2 className="card-title">
+              Uploaded By: {user.name} ({user.id})
+            </h2>
+            <p className="">
+              Uploaded on <span className="font-semibold">{created_at}</span>
+            </p>
+            <p>
+              <span className="font-semibold block">Description:</span>
+              {description}
+            </p>
+            <div className="">
+              <p>
+              {" "}
+              <span className="font-semibold">Width: </span>
+              {width}
+            </p>
+            <p>
+              {" "}
+              <span className="font-semibold">Height: </span>
+              {height}
+            </p>
+            </div>
+            
+            <div className="card-actions">
+              <a
+                className="btn btn-primary"
+                href={links.download}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+          <div className="w-fit mx-auto mt-6">
+            <span className="loading loading-dots loading-lg"></span>
+          </div>
+      )}
     </div>
   );
 };
