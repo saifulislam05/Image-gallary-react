@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 import SearchBox from "../SearchBox/SearchBox";
 import Gallery from "../Gallary/Gallary";
@@ -7,40 +8,52 @@ import Gallery from "../Gallary/Gallary";
 const Body = () => {
   const [images, setImages] = useState([]);
   const [searchInput, setSearchInput] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Initial render
-  const fetchData = async (query) => {
+  const fetchData = async (query, pageNum) => {
     try {
-      let url = "";
-
-      if (query) {
-        url = `https://api.unsplash.com/search/photos?page=1&per_page=30&${
-          query ? "&query=" + query : ""
-        }&client_id=${process.env.REACT_APP_API_KEY}`;
-      } else {
-        url = `https://api.unsplash.com/photos/?page=1&per_page=30&client_id=w52K-FY5dTHfZNbKRh2kUa_bw-cTboeHs5vy5vele0g`;
-      }
+      let url = `https://api.unsplash.com${query?"/search":""}/photos?page=${pageNum}&per_page=20${
+        query ? "&query=" + query : ""
+      }&client_id=${process.env.REACT_APP_API_KEY}`;
 
       const response = await axios.get(url);
-      if (query) {
-        setImages(response.data.results);
-      } else {
-        setImages(response.data);
+      const newImages = query ? response.data.results : response.data;
+
+      // If no new images are fetched, set hasMore to false
+      if (newImages.length === 0) {
+        setHasMore(false);
+        return;
       }
+
+      if (page==1) {
+        setImages(newImages)
+      } else {
+        
+        setImages((prevImages) => [...prevImages, ...newImages]);
+      }
+
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const handleFetchMore = () => {
+    // Increment the page number and fetch more data
+    setPage((prevPage) => prevPage + 1);
+  };
 
-  // On searchInput changes
   useEffect(() => {
-    // Use cleanup function to clear the timeout
+    fetchData(searchInput, page);
+  }, [page]);
+
+  useEffect(() => {
+    // Reset page when searchInput changes
+    setPage(1);
+    setHasMore(true);
+
     const timeoutId = setTimeout(() => {
-      fetchData(searchInput);
+      fetchData(searchInput, 1);
     }, 1000);
 
     return () => clearTimeout(timeoutId);
@@ -49,7 +62,18 @@ const Body = () => {
   return (
     <>
       <SearchBox searchInput={searchInput} setSearchInput={setSearchInput} />
-      <Gallery images={images} />
+      <InfiniteScroll
+        dataLength={images.length}
+        next={handleFetchMore}
+        hasMore={hasMore}
+        loader={
+          <div className="w-fit mx-auto mt-1">
+            <span className="loading loading-dots loading-lg"></span>
+          </div>
+        }
+      >
+        <Gallery images={images} />
+      </InfiniteScroll>
     </>
   );
 };
